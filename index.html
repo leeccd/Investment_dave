@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Hybrid Value Compounder</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a18;
+    --paper: #f5f2eb;
+    --paper2: #ede9e0;
+    --gold: #b8860b;
+    --gold-light: #d4a843;
+    --gold-pale: #f5ecd0;
+    --teal: #1a6b5a;
+    --teal-light: #e8f4f0;
+    --red: #8b2020;
+    --red-light: #fdf0f0;
+    --muted: #6b6860;
+    --border: rgba(26,26,24,0.12);
+    --border-strong: rgba(26,26,24,0.25);
+    --serif: 'Playfair Display', Georgia, serif;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* LAYOUT */
+  .app { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-brand {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .brand-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--gold-light);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .brand-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #fff;
+  }
+
+  .brand-sub {
+    font-size: 11px;
+    color: rgba(245,242,235,0.45);
+    margin-top: 4px;
+    font-family: var(--mono);
+  }
+
+  .nav-section {
+    padding: 16px 0 8px;
+    flex: 1;
+  }
+
+  .nav-group-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: rgba(245,242,235,0.3);
+    text-transform: uppercase;
+    padding: 8px 24px 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 24px;
+    font-size: 13px;
+    color: rgba(245,242,235,0.6);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    font-family: var(--sans);
+    font-weight: 300;
+    letter-spacing: 0.01em;
+  }
+
+  .nav-item:hover { color: #fff; background: rgba(255,255,255,0.04); }
+
+  .nav-item.active {
+    color: #fff;
+    border-left-color: var(--gold-light);
+    background: rgba(212,168,67,0.08);
+  }
+
+  .nav-icon { font-size: 15px; opacity: 0.7; }
+
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .profile-pill {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .profile-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-size: 13px; color: #fff; font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .profile-info p { font-size: 12px; color: rgba(245,242,235,0.9); font-weight: 500; }
+  .profile-info span { font-size: 10px; color: rgba(245,242,235,0.35); font-family: var(--mono); }
+
+  /* MAIN */
+  .main { background: var(--paper); display: flex; flex-direction: column; min-height: 100vh; }
+
+  .topbar {
+    padding: 20px 36px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--paper);
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .page-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .page-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-top: 2px;
+  }
+
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 20px;
+    font-family: var(--mono); font-size: 11px;
+  }
+
+  .badge-gold { background: var(--gold-pale); color: var(--gold); border: 1px solid rgba(184,134,11,0.2); }
+  .badge-teal { background: var(--teal-light); color: var(--teal); border: 1px solid rgba(26,107,90,0.2); }
+  .badge-red { background: var(--red-light); color: var(--red); border: 1px solid rgba(139,32,32,0.15); }
+
+  /* CONTENT */
+  .content { padding: 28px 36px; flex: 1; }
+
+  /* PANELS */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  /* METRIC GRID */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+
+  .metric {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+  }
+
+  .metric.teal::before { background: var(--teal); }
+  .metric.red::before { background: var(--red); }
+  .metric.ink::before { background: var(--ink); }
+
+  .metric-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .metric-value { font-family: var(--serif); font-size: 26px; font-weight: 500; line-height: 1; }
+  .metric-value.up { color: var(--teal); }
+  .metric-value.down { color: var(--red); }
+  .metric-delta { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* TWO COL */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; text-align: left; padding: 8px 0; border-bottom: 1px solid var(--border); font-weight: 400; }
+  td { padding: 10px 0; border-bottom: 1px solid rgba(26,26,24,0.06); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .ticker { font-family: var(--mono); font-size: 12px; font-weight: 500; }
+  .score-bar { display: flex; align-items: center; gap: 8px; }
+  .bar-bg { width: 60px; height: 4px; background: var(--paper2); border-radius: 2px; }
+  .bar-fill { height: 4px; border-radius: 2px; background: var(--teal); }
+  .moat { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 10px; font-family: var(--mono); }
+  .moat-wide { background: var(--teal-light); color: var(--teal); }
+  .moat-narrow { background: var(--gold-pale); color: var(--gold); }
+  .moat-none { background: var(--red-light); color: var(--red); }
+
+  /* DNA BAR CHART */
+  .dna-grid { display: flex; flex-direction: column; gap: 10px; }
+  .dna-row { display: flex; align-items: center; gap: 12px; }
+  .dna-name { font-size: 12px; font-family: var(--mono); color: var(--muted); width: 110px; flex-shrink: 0; }
+  .dna-track { flex: 1; height: 6px; background: var(--paper2); border-radius: 1px; }
+  .dna-fill { height: 6px; border-radius: 1px; }
+  .dna-pct { font-family: var(--mono); font-size: 11px; color: var(--ink); width: 30px; text-align: right; }
+
+  /* CHECKLIST */
+  .checklist { display: flex; flex-direction: column; gap: 8px; }
+  .check-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; padding: 8px 0; border-bottom: 1px solid rgba(26,26,24,0.06); }
+  .check-item:last-child { border-bottom: none; }
+  .check-box { width: 16px; height: 16px; border: 1.5px solid var(--border-strong); border-radius: 2px; flex-shrink: 0; margin-top: 1px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .check-box.done { background: var(--teal); border-color: var(--teal); color: #fff; font-size: 10px; }
+  .check-text { line-height: 1.5; color: var(--ink); }
+  .check-text.done { color: var(--muted); text-decoration: line-through; }
+
+  /* CHAT */
+  .chat-wrap {
+    display: flex; flex-direction: column;
+    height: calc(100vh - 130px);
+  }
+
+  .chat-messages {
+    flex: 1; overflow-y: auto;
+    padding: 16px 0;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .msg { display: flex; gap: 12px; max-width: 85%; }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0; font-family: var(--serif);
+    font-weight: 500;
+  }
+
+  .msg-avatar.guru { background: var(--ink); color: var(--gold-light); }
+  .msg-avatar.user { background: var(--gold); color: #fff; }
+
+  .msg-bubble {
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.65;
+    max-width: 480px;
+  }
+
+  .msg.guru .msg-bubble { background: #fff; border: 1px solid var(--border); color: var(--ink); }
+  .msg.user .msg-bubble { background: var(--ink); color: var(--paper); }
+
+  .msg-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 4px; text-align: right; }
+
+  .chat-input-row {
+    display: flex; gap: 10px; align-items: flex-end;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  .chat-input {
+    flex: 1; padding: 12px 16px;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    font-family: var(--sans); font-size: 14px;
+    background: #fff; color: var(--ink);
+    resize: none; outline: none; min-height: 48px; max-height: 120px;
+    transition: border-color 0.15s;
+    line-height: 1.5;
+  }
+
+  .chat-input:focus { border-color: var(--gold); }
+  .chat-input::placeholder { color: var(--muted); }
+
+  .send-btn {
+    padding: 12px 20px;
+    background: var(--ink); color: var(--gold-light);
+    border: none; border-radius: 4px; cursor: pointer;
+    font-family: var(--mono); font-size: 12px;
+    letter-spacing: 0.05em;
+    transition: background 0.15s;
+    white-space: nowrap; height: 48px;
+  }
+
+  .send-btn:hover { background: #2d2d2a; }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .quick-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip {
+    padding: 5px 12px; border: 1px solid var(--border-strong);
+    border-radius: 20px; font-size: 12px; color: var(--muted);
+    cursor: pointer; background: #fff; font-family: var(--sans);
+    transition: all 0.15s;
+  }
+  .chip:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-pale); }
+
+  /* WATCHLIST FORM */
+  .form-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .form-field { display: flex; flex-direction: column; gap: 4px; }
+  .form-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .form-input {
+    padding: 8px 12px; border: 1px solid var(--border-strong);
+    border-radius: 3px; font-family: var(--mono); font-size: 13px;
+    background: #fff; color: var(--ink); outline: none;
+    transition: border-color 0.15s; width: 120px;
+  }
+  .form-input:focus { border-color: var(--gold); }
+  .form-input.wide { width: 200px; }
+
+  .btn {
+    padding: 8px 18px; border-radius: 3px; cursor: pointer;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em;
+    border: 1px solid; transition: all 0.15s; align-self: flex-end;
+  }
+  .btn-primary { background: var(--ink); color: var(--gold-light); border-color: var(--ink); }
+  .btn-primary:hover { background: #2d2d2a; }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border-strong); }
+  .btn-ghost:hover { background: var(--paper2); }
+
+  /* LOADING DOTS */
+  .loading-dots span {
+    display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--muted); margin: 0 2px;
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+
+  /* RULE ITEMS */
+  .rule-item {
+    display: flex; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid rgba(26,26,24,0.06); align-items: flex-start;
+  }
+  .rule-item:last-child { border-bottom: none; }
+  .rule-num {
+    font-family: var(--serif); font-size: 18px; color: var(--gold);
+    min-width: 24px; font-weight: 700; line-height: 1;
+  }
+  .rule-text { font-size: 13px; line-height: 1.6; color: var(--ink); }
+  .rule-attr { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* SCROLL FINE-TUNING */
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* MARKET MOOD */
+  .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mood-card { padding: 14px 16px; border-radius: 3px; border: 1px solid; }
+  .mood-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .mood-value { font-family: var(--serif); font-size: 20px; font-weight: 500; }
+  .mood-desc { font-size: 11px; margin-top: 4px; }
+
+  .typing-indicator { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-label">Investment OS</div>
+      <div class="brand-title">The Hybrid Value<br>Compounder</div>
+      <div class="brand-sub">ASX · SGX · 54yr · AU-CN</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-group-label">Dashboard</div>
+      <div class="nav-item active" onclick="showPanel('dashboard', this)">
+        <span class="nav-icon">◈</span> Overview
+      </div>
+      <div class="nav-item" onclick="showPanel('watchlist', this)">
+        <span class="nav-icon">◎</span> Watchlist
+      </div>
+
+      <div class="nav-group-label" style="margin-top:8px;">Analysis</div>
+      <div class="nav-item" onclick="showPanel('screener', this)">
+        <span class="nav-icon">⌖</span> Stock Screener
+      </div>
+      <div class="nav-item" onclick="showPanel('valuator', this)">
+        <span class="nav-icon">◆</span> Valuation Tool
+      </div>
+
+      <div class="nav-group-label" style="margin-top:8px;">Guru AI</div>
+      <div class="nav-item" onclick="showPanel('advisor', this)">
+        <span class="nav-icon">✦</span> Ask the Guru
+      </div>
+      <div class="nav-item" onclick="showPanel('checklist', this)">
+        <span class="nav-icon">◻</span> Buy Checklist
+      </div>
+
+      <div class="nav-group-label" style="margin-top:8px;">Strategy</div>
+      <div class="nav-item" onclick="showPanel('persona', this)">
+        <span class="nav-icon">◑</span> My Persona
+      </div>
+      <div class="nav-item" onclick="showPanel('rules', this)">
+        <span class="nav-icon">≡</span> Golden Rules
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="profile-pill">
+        <div class="profile-avatar">AC</div>
+        <div class="profile-info">
+          <p>Hybrid Value Compounder</p>
+          <span>25% return · 2024</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="page-title">Portfolio Overview</div>
+        <div class="page-subtitle" id="page-subtitle">Monday, 8 June 2026 · ASX & SGX markets</div>
+      </div>
+      <div class="topbar-actions">
+        <span class="badge badge-teal">▲ ASX +0.4%</span>
+        <span class="badge badge-gold">SGX +0.2%</span>
+        <span class="badge badge-red">AUD/SGD 0.908</span>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- DASHBOARD PANEL -->
+      <div class="panel active" id="panel-dashboard">
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">2024 Return</div>
+            <div class="metric-value up">25.0%</div>
+            <div class="metric-delta">vs ASX200 +11.4%</div>
+          </div>
+          <div class="metric teal">
+            <div class="metric-label">Target Positions</div>
+            <div class="metric-value">15–20</div>
+            <div class="metric-delta">Concentrated book</div>
+          </div>
+          <div class="metric ink">
+            <div class="metric-label">Cash Reserve</div>
+            <div class="metric-value">18%</div>
+            <div class="metric-delta">Dry powder ready</div>
+          </div>
+          <div class="metric red">
+            <div class="metric-label">Horizon</div>
+            <div class="metric-value">8–12 yr</div>
+            <div class="metric-delta">To retirement</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">
+              Investor DNA
+              <span class="badge badge-gold">Hybrid blend</span>
+            </div>
+            <div class="dna-grid">
+              <div class="dna-row">
+                <span class="dna-name">Value / Graham</span>
+                <div class="dna-track"><div class="dna-fill" style="width:35%; background:#1a6b5a;"></div></div>
+                <span class="dna-pct">35%</span>
+              </div>
+              <div class="dna-row">
+                <span class="dna-name">Story / Lynch</span>
+                <div class="dna-track"><div class="dna-fill" style="width:25%; background:#b8860b;"></div></div>
+                <span class="dna-pct">25%</span>
+              </div>
+              <div class="dna-row">
+                <span class="dna-name">Models / Munger</span>
+                <div class="dna-track"><div class="dna-fill" style="width:25%; background:#534AB7;"></div></div>
+                <span class="dna-pct">25%</span>
+              </div>
+              <div class="dna-row">
+                <span class="dna-name">Macro / Dalio</span>
+                <div class="dna-track"><div class="dna-fill" style="width:15%; background:#8b2020;"></div></div>
+                <span class="dna-pct">15%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Market Pulse</div>
+            <div class="mood-grid">
+              <div class="mood-card" style="background:var(--teal-light); border-color:rgba(26,107,90,0.2);">
+                <div class="mood-title" style="color:var(--teal);">ASX 200</div>
+                <div class="mood-value" style="color:var(--teal);">7,834</div>
+                <div class="mood-desc" style="color:var(--teal);">▲ +0.4% today</div>
+              </div>
+              <div class="mood-card" style="background:var(--gold-pale); border-color:rgba(184,134,11,0.2);">
+                <div class="mood-title" style="color:var(--gold);">STI (SGX)</div>
+                <div class="mood-value" style="color:var(--gold);">3,421</div>
+                <div class="mood-desc" style="color:var(--gold);">▲ +0.2% today</div>
+              </div>
+              <div class="mood-card" style="background:#fff; border-color:var(--border);">
+                <div class="mood-title" style="color:var(--muted);">AUD/SGD</div>
+                <div class="mood-value">0.908</div>
+                <div class="mood-desc" style="color:var(--muted);">Monitor for FX drag</div>
+              </div>
+              <div class="mood-card" style="background:var(--red-light); border-color:rgba(139,32,32,0.15);">
+                <div class="mood-title" style="color:var(--red);">RBA Rate</div>
+                <div class="mood-value" style="color:var(--red);">3.85%</div>
+                <div class="mood-desc" style="color:var(--red);">Easing cycle underway</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            Top Watchlist Picks
+            <span style="font-size:12px; font-family:var(--mono); color:var(--muted); font-weight:400;">sorted by value score</span>
+          </div>
+          <table>
+            <tr>
+              <th>Ticker</th>
+              <th>Name</th>
+              <th>Market</th>
+              <th>Value Score</th>
+              <th>Moat</th>
+              <th>Sector</th>
+              <th>Status</th>
+            </tr>
+            <tr>
+              <td><span class="ticker">BHP.AX</span></td>
+              <td>BHP Group</td>
+              <td><span class="badge badge-gold">ASX</span></td>
+              <td><div class="score-bar"><div class="bar-bg"><div class="bar-fill" style="width:82%;"></div></div><span style="font-family:var(--mono);font-size:11px;">82</span></div></td>
+              <td><span class="moat moat-wide">Wide</span></td>
+              <td>Resources</td>
+              <td><span class="badge badge-teal">Watching</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">CBA.AX</span></td>
+              <td>Commonwealth Bank</td>
+              <td><span class="badge badge-gold">ASX</span></td>
+              <td><div class="score-bar"><div class="bar-bg"><div class="bar-fill" style="width:70%;"></div></div><span style="font-family:var(--mono);font-size:11px;">70</span></div></td>
+              <td><span class="moat moat-wide">Wide</span></td>
+              <td>Financials</td>
+              <td><span class="badge badge-red">Overvalued</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">CICT.SI</span></td>
+              <td>CapitaLand Integrated CT</td>
+              <td><span class="badge badge-teal">SGX</span></td>
+              <td><div class="score-bar"><div class="bar-bg"><div class="bar-fill" style="width:88%;"></div></div><span style="font-family:var(--mono);font-size:11px;">88</span></div></td>
+              <td><span class="moat moat-wide">Wide</span></td>
+              <td>REIT</td>
+              <td><span class="badge badge-teal">Buy zone</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">MLT.SI</span></td>
+              <td>Mapletree Logistics</td>
+              <td><span class="badge badge-teal">SGX</span></td>
+              <td><div class="score-bar"><div class="bar-bg"><div class="bar-fill" style="width:79%;"></div></div><span style="font-family:var(--mono);font-size:11px;">79</span></div></td>
+              <td><span class="moat moat-narrow">Narrow</span></td>
+              <td>REIT</td>
+              <td><span class="badge badge-gold">Fair value</span></td>
+            </tr>
+            <tr>
+              <td><span class="ticker">WES.AX</span></td>
+              <td>Wesfarmers</td>
+              <td><span class="badge badge-gold">ASX</span></td>
+              <td><div class="score-bar"><div class="bar-bg"><div class="bar-fill" style="width:66%;"></div></div><span style="font-family:var(--mono);font-size:11px;">66</span></div></td>
+              <td><span class="moat moat-wide">Wide</span></td>
+              <td>Conglomerate</td>
+              <td><span class="badge badge-red">Overvalued</span></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- WATCHLIST PANEL -->
+      <div class="panel" id="panel-watchlist">
+        <div class="card">
+          <div class="card-title">Add to Watchlist</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Ticker</label>
+              <input class="form-input" id="wl-ticker" placeholder="e.g. BHP.AX" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Company</label>
+              <input class="form-input wide" id="wl-name" placeholder="BHP Group" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Market</label>
+              <select class="form-input" id="wl-market" style="width:90px;">
+                <option>ASX</option>
+                <option>SGX</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Sector</label>
+              <input class="form-input" id="wl-sector" placeholder="Resources" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Target Price</label>
+              <input class="form-input" id="wl-price" placeholder="$42.00" style="width:90px;" />
+            </div>
+            <button class="btn btn-primary" onclick="addToWatchlist()">+ Add</button>
+          </div>
+        </div>
+        <div class="card" id="wl-table-card">
+          <div class="card-title">My Watchlist</div>
+          <table>
+            <tr>
+              <th>Ticker</th><th>Company</th><th>Market</th><th>Sector</th><th>Target Price</th><th>Added</th><th></th>
+            </tr>
+            <tbody id="wl-body">
+              <tr>
+                <td><span class="ticker">CICT.SI</span></td>
+                <td>CapitaLand Integrated CT</td>
+                <td><span class="badge badge-teal">SGX</span></td>
+                <td>REIT</td>
+                <td style="font-family:var(--mono);">S$2.10</td>
+                <td style="font-family:var(--mono);font-size:11px;color:var(--muted);">2 Jun 2026</td>
+                <td><span style="font-family:var(--mono);font-size:11px;color:var(--red);cursor:pointer;" onclick="this.closest('tr').remove()">remove</span></td>
+              </tr>
+              <tr>
+                <td><span class="ticker">BHP.AX</span></td>
+                <td>BHP Group</td>
+                <td><span class="badge badge-gold">ASX</span></td>
+                <td>Resources</td>
+                <td style="font-family:var(--mono);">A$42.50</td>
+                <td style="font-family:var(--mono);font-size:11px;color:var(--muted);">28 May 2026</td>
+                <td><span style="font-family:var(--mono);font-size:11px;color:var(--red);cursor:pointer;" onclick="this.closest('tr').remove()">remove</span></td>
+              </tr>
+              <tr>
+                <td><span class="ticker">MLT.SI</span></td>
+                <td>Mapletree Logistics</td>
+                <td><span class="badge badge-teal">SGX</span></td>
+                <td>REIT</td>
+                <td style="font-family:var(--mono);">S$1.55</td>
+                <td style="font-family:var(--mono);font-size:11px;color:var(--muted);">15 May 2026</td>
+                <td><span style="font-family:var(--mono);font-size:11px;color:var(--red);cursor:pointer;" onclick="this.closest('tr').remove()">remove</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SCREENER PANEL -->
+      <div class="panel" id="panel-screener">
+        <div class="card">
+          <div class="card-title">Value Screen Parameters</div>
+          <div class="form-row" style="align-items:flex-end;">
+            <div class="form-field">
+              <label class="form-label">Market</label>
+              <select class="form-input" id="sc-market">
+                <option>ASX</option><option>SGX</option><option>Both</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Max P/E</label>
+              <input class="form-input" id="sc-pe" value="18" style="width:80px;" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Min Yield %</label>
+              <input class="form-input" id="sc-yield" value="4.0" style="width:80px;" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Max P/B</label>
+              <input class="form-input" id="sc-pb" value="2.5" style="width:80px;" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Moat Required</label>
+              <select class="form-input" id="sc-moat">
+                <option>Any</option><option>Narrow+</option><option>Wide only</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="runScreener()">Run Screen</button>
+          </div>
+        </div>
+        <div class="card" id="screen-results">
+          <div class="card-title">Screen Results <span id="screen-count" style="font-size:12px;font-family:var(--mono);font-weight:400;color:var(--muted);">— run a screen above</span></div>
+          <table>
+            <tr><th>Ticker</th><th>Name</th><th>Market</th><th>P/E</th><th>Yield</th><th>P/B</th><th>Moat</th><th>Verdict</th></tr>
+            <tbody id="screen-body">
+              <tr><td colspan="8" style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center;">Set parameters above and run screen to find value opportunities</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VALUATION PANEL -->
+      <div class="panel" id="panel-valuator">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">DCF Quick Valuation</div>
+            <div class="form-row" style="flex-direction:column; gap:12px;">
+              <div class="form-field" style="width:100%;">
+                <label class="form-label">Current EPS (AUD or SGD)</label>
+                <input class="form-input wide" id="v-eps" placeholder="2.50" oninput="calcDCF()" />
+              </div>
+              <div class="form-field" style="width:100%;">
+                <label class="form-label">Expected Growth Rate % (5yr)</label>
+                <input class="form-input wide" id="v-growth" placeholder="8" oninput="calcDCF()" />
+              </div>
+              <div class="form-field" style="width:100%;">
+                <label class="form-label">Terminal Growth Rate %</label>
+                <input class="form-input wide" id="v-tgr" placeholder="3" oninput="calcDCF()" />
+              </div>
+              <div class="form-field" style="width:100%;">
+                <label class="form-label">Discount Rate % (WACC)</label>
+                <input class="form-input wide" id="v-wacc" placeholder="10" oninput="calcDCF()" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Intrinsic Value Output</div>
+            <div style="text-align:center; padding:20px 0;">
+              <div style="font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">Intrinsic Value (per share)</div>
+              <div id="iv-value" style="font-family:var(--serif);font-size:42px;font-weight:500;color:var(--teal);">—</div>
+              <hr class="divider" style="margin:16px 0;">
+              <div class="two-col" style="text-align:left;">
+                <div>
+                  <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px;">BUY BELOW (30% MoS)</div>
+                  <div id="iv-buy" style="font-family:var(--serif);font-size:20px;color:var(--teal);">—</div>
+                </div>
+                <div>
+                  <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px;">SELL ABOVE (fair value)</div>
+                  <div id="iv-sell" style="font-family:var(--serif);font-size:20px;color:var(--gold);">—</div>
+                </div>
+              </div>
+              <div id="iv-verdict" style="margin-top:16px;font-size:13px;color:var(--muted);font-family:var(--sans);">Enter values to calculate intrinsic worth</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Graham Number Calculator</div>
+          <div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;">
+            <div class="form-field">
+              <label class="form-label">EPS</label>
+              <input class="form-input" id="g-eps" placeholder="2.50" oninput="calcGraham()" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Book Value Per Share</label>
+              <input class="form-input" id="g-bvps" placeholder="18.00" oninput="calcGraham()" />
+            </div>
+            <div style="padding-bottom:2px;">
+              <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px;">GRAHAM NUMBER</div>
+              <div id="g-result" style="font-family:var(--serif);font-size:24px;color:var(--ink);">—</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-top:12px;font-family:var(--mono);">Graham Number = √(22.5 × EPS × BVPS) — buy below this price for a margin of safety.</p>
+        </div>
+      </div>
+
+      <!-- ASK THE GURU PANEL -->
+      <div class="panel" id="panel-advisor">
+        <div class="chat-wrap">
+          <div class="quick-chips">
+            <span class="chip" onclick="sendChip(this)">Is CICT.SI fairly valued?</span>
+            <span class="chip" onclick="sendChip(this)">What SGX REITs should I buy now?</span>
+            <span class="chip" onclick="sendChip(this)">Is BHP worth buying at A$42?</span>
+            <span class="chip" onclick="sendChip(this)">How should I allocate between ASX and SGX?</span>
+            <span class="chip" onclick="sendChip(this)">What macro risks should I watch?</span>
+            <span class="chip" onclick="sendChip(this)">Analyse my 25% return strategy</span>
+          </div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="msg guru">
+              <div class="msg-avatar guru">HV</div>
+              <div>
+                <div class="msg-bubble">
+                  Welcome. I am your Hybrid Value Compounder — blending the patience of Buffett, the curiosity of Lynch, the rationality of Munger, and the macro awareness of Dalio.<br><br>
+                  Ask me anything about ASX or SGX stocks, valuation, portfolio construction, or investment strategy. I'll give you my honest analysis — no hype, no speculation.
+                </div>
+                <div class="msg-meta">The Guru · ready</div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-row">
+            <textarea class="chat-input" id="chat-in" placeholder="Ask the Guru — e.g. Is CapitaLand worth buying today?" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+            <button class="send-btn" id="send-btn" onclick="sendMsg()">Send ↵</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUY CHECKLIST PANEL -->
+      <div class="panel" id="panel-checklist">
+        <div class="card">
+          <div class="card-title">
+            Pre-Buy Due Diligence Checklist
+            <button class="btn btn-ghost" onclick="resetChecklist()" style="font-size:11px;padding:4px 12px;">Reset</button>
+          </div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Run through every point before committing capital. Munger's inversion: if you can't check all 10, don't buy.</p>
+          <div class="checklist" id="checklist">
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-text">I can explain this business in under 2 minutes (Lynch test)</div></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-text">The stock trades at least 20–30% below my calculated intrinsic value (Graham margin of safety)</div></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-text">The business has a durable competitive moat — pricing power, switching costs, or network effects</div></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-text">Management has a strong track record of capital allocation — ROE > 15% sustained over 5+ years</div></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-text">The balance sheet is sound — debt/equity reasonable for the sector, interest cover > 3x</div></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-text">Free cash flow is positive and growing — earnings quality is real, not accounting fiction</div></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-text">I have considered Munger's inversion: what would make this investment fail? I'm comfortable with those risks.</div></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-text">Macro factors are not headwinds — AUD/SGD FX, interest rate cycle, China demand all considered</div></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-text">The position size fits my portfolio — no single stock will exceed 10% unless conviction is extraordinary</div></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><div class="check-text">I am buying because of value, not because I fear missing out. This is patient capital, not speculation.</div></div>
+          </div>
+          <div id="check-score" style="margin-top:16px;font-family:var(--mono);font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:12px;">0 / 10 completed — check each item above</div>
+        </div>
+      </div>
+
+      <!-- PERSONA PANEL -->
+      <div class="panel" id="panel-persona">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title">My Investment Persona</div>
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+              <div style="width:56px;height:56px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:20px;color:var(--gold-light);font-weight:500;flex-shrink:0;">AC</div>
+              <div>
+                <div style="font-family:var(--serif);font-size:18px;font-weight:500;">The Hybrid Value Compounder</div>
+                <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:3px;">54yr · Australian-Chinese · ASX & SGX</div>
+              </div>
+            </div>
+            <p style="font-size:13px;line-height:1.7;color:var(--ink);">A patient, disciplined investor who combines Graham's margin of safety with Lynch's ability to spot stories, Munger's mental models to avoid errors, and Dalio's macro awareness to navigate both the ASX and SGX with a cultural edge that Western investors cannot replicate.</p>
+          </div>
+          <div class="card">
+            <div class="card-title">Cultural Edge</div>
+            <p style="font-size:13px;line-height:1.7;color:var(--ink);margin-bottom:12px;">Your Australian-Chinese background gives you a rare dual perspective that creates genuine information advantages:</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="padding:10px 12px;background:var(--teal-light);border-left:3px solid var(--teal);border-radius:2px;font-size:13px;">Reading Chinese corporate culture and management signals in SGX-listed companies</div>
+              <div style="padding:10px 12px;background:var(--gold-pale);border-left:3px solid var(--gold);border-radius:2px;font-size:13px;">Understanding China demand cycles for ASX resources (BHP, RIO, FMG)</div>
+              <div style="padding:10px 12px;background:var(--paper2);border-left:3px solid var(--border-strong);border-radius:2px;font-size:13px;">Direct access to Singapore REIT income with zero capital gains tax advantage</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Guru Influence Map</div>
+          <div class="three-col">
+            <div style="padding:14px 0;border-right:1px solid var(--border);">
+              <div style="font-family:var(--serif);font-size:16px;margin-bottom:6px;">Buffett · Graham</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.6;">Buy wonderful companies at fair prices. Never overpay. Margin of safety always. Think like an owner, not a trader.</div>
+            </div>
+            <div style="padding:14px 16px;border-right:1px solid var(--border);">
+              <div style="font-family:var(--serif);font-size:16px;margin-bottom:6px;">Lynch · Bernstein</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.6;">Invest in what you know. Stories matter. History guides strategy — market cycles always repeat.</div>
+            </div>
+            <div style="padding:14px 0 14px 16px;">
+              <div style="font-family:var(--serif);font-size:16px;margin-bottom:6px;">Munger · Dalio</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.6;">Think in mental models. Invert problems. Balance risk across macro cycles. Keep cash to deploy in dislocations.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GOLDEN RULES PANEL -->
+      <div class="panel" id="panel-rules">
+        <div class="card">
+          <div class="card-title">The 6 Golden Rules of the Hybrid Value Compounder</div>
+          <div>
+            <div class="rule-item">
+              <div class="rule-num">I</div>
+              <div><div class="rule-text">Only buy when you have a clear margin of safety — minimum 20–30% below intrinsic value. If the price is right, you already have your return. If it isn't, wait.</div><div class="rule-attr">— Graham / Buffett</div></div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-num">II</div>
+              <div><div class="rule-text">Keep 15–20% cash reserve at all times to deploy during market dislocations. The investor who runs out of cash at the bottom is the one who sells at the worst moment.</div><div class="rule-attr">— Dalio / Buffett</div></div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-num">III</div>
+              <div><div class="rule-text">Run a concentrated book of 15–20 positions. Beyond that, you are diluting your best ideas with your worst. Diversification is protection against ignorance — know what you own.</div><div class="rule-attr">— Buffett / Lynch</div></div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-num">IV</div>
+              <div><div class="rule-text">Prioritise dividend-paying SGX REITs and ASX blue chips for growing income. At 54, capital should compound but income must also grow — distributions are not optional.</div><div class="rule-attr">— Lynch / Bernstein</div></div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-num">V</div>
+              <div><div class="rule-text">Review macro conditions every quarter — AUD/SGD FX, RBA and MAS interest rate policy, China demand signals. Both your markets are China-sensitive. Stay informed without being reactive.</div><div class="rule-attr">— Dalio</div></div>
+            </div>
+            <div class="rule-item">
+              <div class="rule-num">VI</div>
+              <div><div class="rule-text">Never chase a stock that has already run. If you missed the price, let it go. The market delivers pitches every season — your job is to wait for the fat one, then swing hard.</div><div class="rule-attr">— Buffett / Munger</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<script>
+  // NAV
+  function showPanel(id, el) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    el.classList.add('active');
+    const titles = {
+      dashboard: ['Portfolio Overview', 'Monday, 8 June 2026 · ASX & SGX markets'],
+      watchlist: ['My Watchlist', 'Stocks on radar · add & track'],
+      screener: ['Value Screener', 'Filter ASX & SGX by Graham criteria'],
+      valuator: ['Valuation Tools', 'DCF & Graham Number calculator'],
+      advisor: ['Ask the Guru', 'AI-powered investment analysis'],
+      checklist: ['Pre-Buy Checklist', 'Run through before every purchase'],
+      persona: ['My Persona', 'The Hybrid Value Compounder identity'],
+      rules: ['Golden Rules', 'The 6 rules that govern every decision']
+    };
+    document.getElementById('page-title').textContent = titles[id][0];
+    document.getElementById('page-subtitle').textContent = titles[id][1];
+  }
+
+  // WATCHLIST
+  function addToWatchlist() {
+    const ticker = document.getElementById('wl-ticker').value.trim();
+    const name = document.getElementById('wl-name').value.trim();
+    const market = document.getElementById('wl-market').value;
+    const sector = document.getElementById('wl-sector').value.trim();
+    const price = document.getElementById('wl-price').value.trim();
+    if (!ticker) return;
+    const row = document.createElement('tr');
+    const today = new Date().toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
+    const badgeClass = market === 'SGX' ? 'badge-teal' : 'badge-gold';
+    row.innerHTML = `<td><span class="ticker">${ticker}</span></td><td>${name||'—'}</td><td><span class="badge ${badgeClass}">${market}</span></td><td>${sector||'—'}</td><td style="font-family:var(--mono);">${price||'—'}</td><td style="font-family:var(--mono);font-size:11px;color:var(--muted);">${today}</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--red);cursor:pointer;" onclick="this.closest('tr').remove()">remove</span></td>`;
+    document.getElementById('wl-body').appendChild(row);
+    ['wl-ticker','wl-name','wl-sector','wl-price'].forEach(id => document.getElementById(id).value='');
+  }
+
+  // SCREENER
+  const screenData = [
+    {ticker:'CICT.SI', name:'CapitaLand Integrated CT', market:'SGX', pe:14.2, yield:5.8, pb:1.1, moat:'Wide'},
+    {ticker:'MLT.SI', name:'Mapletree Logistics', market:'SGX', pe:16.1, yield:5.2, pb:1.3, moat:'Narrow'},
+    {ticker:'BHP.AX', name:'BHP Group', market:'ASX', pe:11.8, yield:4.9, pb:2.1, moat:'Wide'},
+    {ticker:'NAB.AX', name:'National Australia Bank', market:'ASX', pe:13.4, yield:5.6, pb:1.8, moat:'Wide'},
+    {ticker:'WBC.AX', name:'Westpac Banking', market:'ASX', pe:12.9, yield:5.9, pb:1.5, moat:'Narrow'},
+    {ticker:'FMG.AX', name:'Fortescue', market:'ASX', pe:8.2, yield:7.4, pb:2.3, moat:'Narrow'},
+    {ticker:'CT.SI', name:'CapitaLand Ascendas REIT', market:'SGX', pe:15.3, yield:5.4, pb:1.2, moat:'Wide'},
+    {ticker:'CBA.AX', name:'Commonwealth Bank', market:'ASX', pe:22.1, yield:3.4, pb:3.8, moat:'Wide'},
+    {ticker:'WES.AX', name:'Wesfarmers', market:'ASX', pe:26.4, yield:2.8, pb:5.2, moat:'Wide'},
+    {ticker:'DBS.SI', name:'DBS Group', market:'SGX', pe:10.2, yield:5.2, pb:1.9, moat:'Wide'},
+  ];
+
+  function runScreener() {
+    const market = document.getElementById('sc-market').value;
+    const maxPE = parseFloat(document.getElementById('sc-pe').value) || 99;
+    const minYield = parseFloat(document.getElementById('sc-yield').value) || 0;
+    const maxPB = parseFloat(document.getElementById('sc-pb').value) || 99;
+    const moatReq = document.getElementById('sc-moat').value;
+
+    let results = screenData.filter(s => {
+      if (market !== 'Both' && s.market !== market) return false;
+      if (s.pe > maxPE) return false;
+      if (s.yield < minYield) return false;
+      if (s.pb > maxPB) return false;
+      if (moatReq === 'Wide only' && s.moat !== 'Wide') return false;
+      if (moatReq === 'Narrow+' && s.moat === 'None') return false;
+      return true;
+    });
+
+    document.getElementById('screen-count').textContent = `— ${results.length} result${results.length!==1?'s':''} found`;
+    const body = document.getElementById('screen-body');
+    if (results.length === 0) {
+      body.innerHTML = '<tr><td colspan="8" style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center;">No stocks match your criteria — try relaxing the filters</td></tr>';
+      return;
+    }
+    body.innerHTML = results.map(s => {
+      const badgeClass = s.market==='SGX'?'badge-teal':'badge-gold';
+      const moatClass = s.moat==='Wide'?'moat-wide':s.moat==='Narrow'?'moat-narrow':'moat-none';
+      const score = Math.round(100 - (s.pe/maxPE)*30 - (maxPB-s.pb)/maxPB*20 + (s.yield/minYield)*20);
+      const capped = Math.min(Math.max(score, 50), 95);
+      const verdict = s.pe<12&&s.yield>5?'<span class="badge badge-teal">Strong buy</span>':s.pe<16?'<span class="badge badge-gold">Watch</span>':'<span class="badge">Monitor</span>';
+      return `<tr>
+        <td><span class="ticker">${s.ticker}</span></td>
+        <td>${s.name}</td>
+        <td><span class="badge ${badgeClass}">${s.market}</span></td>
+        <td style="font-family:var(--mono);">${s.pe.toFixed(1)}x</td>
+        <td style="font-family:var(--mono);color:var(--teal);">${s.yield.toFixed(1)}%</td>
+        <td style="font-family:var(--mono);">${s.pb.toFixed(1)}x</td>
+        <td><span class="moat ${moatClass}">${s.moat}</span></td>
+        <td>${verdict}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // DCF
+  function calcDCF() {
+    const eps = parseFloat(document.getElementById('v-eps').value);
+    const g = parseFloat(document.getElementById('v-growth').value)/100;
+    const tg = parseFloat(document.getElementById('v-tgr').value)/100;
+    const r = parseFloat(document.getElementById('v-wacc').value)/100;
+    if (isNaN(eps)||isNaN(g)||isNaN(tg)||isNaN(r)||r<=tg) return;
+    let pv=0, cf=eps;
+    for(let i=1;i<=5;i++){cf*=(1+g);pv+=cf/Math.pow(1+r,i);}
+    const tv=(cf*(1+tg))/(r-tg);
+    const pvtv=tv/Math.pow(1+r,5);
+    const iv=pv+pvtv;
+    const buy=iv*0.70;
+    document.getElementById('iv-value').textContent='$'+iv.toFixed(2);
+    document.getElementById('iv-buy').textContent='$'+buy.toFixed(2);
+    document.getElementById('iv-sell').textContent='$'+iv.toFixed(2);
+    document.getElementById('iv-verdict').textContent=`Margin of safety entry at $${buy.toFixed(2)} — a ${(30).toFixed(0)}% discount to intrinsic value.`;
+  }
+
+  function calcGraham() {
+    const eps = parseFloat(document.getElementById('g-eps').value);
+    const bvps = parseFloat(document.getElementById('g-bvps').value);
+    if (isNaN(eps)||isNaN(bvps)||eps<0||bvps<0) return;
+    const gn = Math.sqrt(22.5*eps*bvps);
+    document.getElementById('g-result').textContent='$'+gn.toFixed(2);
+  }
+
+  // CHECKLIST
+  function toggleCheck(el) {
+    el.classList.toggle('done');
+    if(el.classList.contains('done')) el.innerHTML='✓';
+    else el.innerHTML='';
+    const text = el.nextElementSibling;
+    text.classList.toggle('done');
+    const done = document.querySelectorAll('.check-box.done').length;
+    const total = document.querySelectorAll('.check-box').length;
+    const el2 = document.getElementById('check-score');
+    el2.textContent=`${done} / ${total} completed`;
+    if(done===total) el2.style.color='var(--teal)';
+    else if(done>=7) el2.style.color='var(--gold)';
+    else el2.style.color='var(--muted)';
+  }
+
+  function resetChecklist() {
+    document.querySelectorAll('.check-box').forEach(b=>{b.classList.remove('done');b.innerHTML='';});
+    document.querySelectorAll('.check-text').forEach(t=>t.classList.remove('done'));
+    const el=document.getElementById('check-score');
+    el.textContent='0 / 10 completed — check each item above';
+    el.style.color='var(--muted)';
+  }
+
+  // CHAT
+  const SYSTEM_PROMPT = `You are the Hybrid Value Compounder — a seasoned investment guru persona for a 54-year-old Australian-Chinese retail investor targeting ASX (Australian Securities Exchange) and SGX (Singapore Exchange) markets.
+
+Your personality blends:
+- Warren Buffett & Benjamin Graham: margin of safety, intrinsic value, long-term ownership mindset
+- Peter Lynch: invest in what you know, look for stories, accessible language
+- Charlie Munger: mental models, inversion thinking, avoiding stupidity
+- Ray Dalio: macro awareness, risk balancing, diversification across cycles
+- Peter Bernstein: respect for market history, humility about uncertainty
+
+Your investor's profile:
+- Age 54, planning 8-12 year investment horizon to retirement
+- 25% return last year — above market, disciplined approach
+- Focuses on ASX (resources, banks, REITs) and SGX (REITs, financials, Asia plays)
+- Australian-Chinese background gives cultural edge in reading Singapore/China-linked companies
+- Moderate-to-growth risk profile, 15-20% cash reserve policy
+- Prefers concentrated portfolio of 15-20 positions
+
+How you respond:
+- Give direct, specific, actionable investment analysis
+- Always consider valuation (P/E, P/B, yield, DCF)
+- Reference specific ASX and SGX stocks when relevant (BHP, CBA, NAB, WES, FMG, RIO on ASX; CICT, MLT, DBS, OCBC, Mapletree REITs on SGX)
+- Mention margin of safety, moats, and capital allocation quality
+- Flag macro risks: AUD/SGD FX, RBA/MAS rates, China demand cycles
+- Keep responses concise and decisive — 2-4 paragraphs max
+- Never recommend speculative or leveraged positions
+- Always remind about position sizing and portfolio concentration limits
+- Speak with authority but acknowledge uncertainty honestly`;
+
+  async function sendMsg() {
+    const input = document.getElementById('chat-in');
+    const text = input.value.trim();
+    if (!text) return;
+    appendMsg('user', text);
+    input.value = '';
+    const btn = document.getElementById('send-btn');
+    btn.disabled = true;
+
+    const typing = appendTyping();
+
+    try {
+      const history = buildHistory();
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: SYSTEM_PROMPT,
+          messages: history
+        })
+      });
+      const data = await resp.json();
+      const reply = data.content?.find(b=>b.type==='text')?.text || 'I was unable to generate a response. Please try again.';
+      typing.remove();
+      appendMsg('guru', reply);
+    } catch(e) {
+      typing.remove();
+      appendMsg('guru', 'Network error. Please check your connection and try again.');
+    }
+    btn.disabled = false;
+  }
+
+  function sendChip(el) {
+    document.getElementById('chat-in').value = el.textContent;
+    sendMsg();
+  }
+
+  function buildHistory() {
+    const msgs = document.querySelectorAll('.msg:not(.typing-msg)');
+    const history = [];
+    msgs.forEach(m => {
+      if(m.classList.contains('guru') && !m.querySelector('.msg-meta')?.textContent.includes('ready')) {
+        history.push({role:'assistant', content: m.querySelector('.msg-bubble').textContent});
+      } else if(m.classList.contains('user')) {
+        history.push({role:'user', content: m.querySelector('.msg-bubble').textContent});
+      }
+    });
+    return history;
+  }
+
+  function appendMsg(role, text) {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    const initials = role==='guru'?'HV':'AC';
+    const time = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+    div.innerHTML = `<div class="msg-avatar ${role}">${initials}</div><div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-meta">${role==='guru'?'The Guru':'You'} · ${time}</div></div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+  }
+
+  function appendTyping() {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'msg guru typing-msg';
+    div.innerHTML = `<div class="msg-avatar guru">HV</div><div><div class="msg-bubble"><div class="loading-dots"><span></span><span></span><span></span></div></div></div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+  }
+</script>
+</body>
+</html>
